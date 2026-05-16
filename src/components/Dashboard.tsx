@@ -9,11 +9,13 @@ import SummaryCard from './SummaryCard';
 interface AnalyticsData {
   category: string;
   amount: number;
+  type: 'income' | 'expense';
 }
 
 interface TrendData {
   date: string;
   amount: number;
+  type: 'income' | 'expense';
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];

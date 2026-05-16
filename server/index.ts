@@ -12,13 +12,14 @@ app.use(express.json());
 interface TransactionSummary {
   category: string;
   amount: number;
+  type: 'income' | 'expense';
 }
 
 const mockTransactions: TransactionSummary[] = [
-  { category: 'מזון', amount: 1500 },
-  { category: 'חשבונות', amount: 900 },
-  { category: 'רכב', amount: 600 },
-  { category: 'פנאי', amount: 400 },
+  { category: 'מזון', amount: 1500, type: 'expense' },
+  { category: 'חשבונות', amount: 900, type: 'expense' },
+  { category: 'רכב', amount: 600, type: 'expense' },
+  { category: 'פנאי', amount: 400, type: 'expense' },
 ];
 // נתוני דמה לגרף קווי (הוצאות לאורך השבוע)
 const mockTrendData = [
@@ -47,7 +48,10 @@ app.get('/api/analytics/summary', (req, res) => {
     totalExpenses: 8500,
     balance: 3500
   };
-  res.json(summary);
+  const totalIncome =mockTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = mockTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const balance = totalIncome - totalExpenses;
+  res.json({ ...summary, totalIncome, totalExpenses, balance });
 });
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
