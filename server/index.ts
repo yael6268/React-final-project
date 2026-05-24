@@ -1,5 +1,4 @@
-
-import express, { type Request, type Response } from 'express';
+﻿import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 // @ts-ignore
 import { generateFinancialInsight } from './services/aiService.js';
@@ -41,26 +40,21 @@ app.get('/api/analytics/category-summary', (req: Request, res: Response) => {
   res.json(mockTransactions);
 });
 
-
 // נתיב לכרטיסיות הסיכום
 app.get('/api/analytics/summary', (req, res) => {
-  const summary = {
-    totalIncome: 12000,
-    totalExpenses: 8500,
-    balance: 3500
-  };
   const totalIncome = mockTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
   const totalExpenses = mockTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
   const balance = totalIncome - totalExpenses;
-  res.json({ ...summary, totalIncome, totalExpenses, balance });
+
+  res.json({
+    totalIncome,
+    totalExpenses,
+    balance,
+  });
 });
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-// post/get?
+
 app.post('/api/ai/insights', async (req: Request, res: Response) => {
   try {
-    // If client provided transactions in the request body, prefer them.
     const payload = req.body && Object.keys(req.body).length ? req.body : { transactions: mockTransactions };
     const dataString = JSON.stringify(payload.transactions || payload);
     const insight = await generateFinancialInsight(dataString);
@@ -69,4 +63,8 @@ app.post('/api/ai/insights', async (req: Request, res: Response) => {
     console.error('Error generating insight:', error);
     res.status(500).json({ error: 'Failed to generate insight' });
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
