@@ -49,7 +49,7 @@ app.get('/api/analytics/summary', (req, res) => {
     totalExpenses: 8500,
     balance: 3500
   };
-  const totalIncome =mockTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = mockTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
   const totalExpenses = mockTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
   const balance = totalIncome - totalExpenses;
   res.json({ ...summary, totalIncome, totalExpenses, balance });
@@ -59,12 +59,14 @@ app.listen(PORT, () => {
 });
 // post/get?
 app.post('/api/ai/insights', async (req: Request, res: Response) => {
-  try{
-    const dataString = JSON.stringify(mockTransactions);
+  try {
+    // If client provided transactions in the request body, prefer them.
+    const payload = req.body && Object.keys(req.body).length ? req.body : { transactions: mockTransactions };
+    const dataString = JSON.stringify(payload.transactions || payload);
     const insight = await generateFinancialInsight(dataString);
     res.json({ insight });
   } catch (error) {
     console.error('Error generating insight:', error);
     res.status(500).json({ error: 'Failed to generate insight' });
-  }});
-  
+  }
+});
