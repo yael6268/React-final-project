@@ -1,12 +1,35 @@
 ﻿import express, { type Request, type Response } from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 // @ts-ignore
 import { generateFinancialInsight } from './services/aiService.js';
+import authRoutes from './routes/auth.routes.ts'; // 🔥 שינוי 1: מייבאים את הנתיבים שלך!
+
+dotenv.config();
+
 const app = express();
 const PORT = 5000;
 
+// 🔥 חיבור ל-MongoDB בענן
+const connectDB = async () => {
+  try {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/finance-app';
+    await mongoose.connect(mongoUri);
+    console.log('✅ התחבור ל-MongoDB הצליח!');
+  } catch (error) {
+    console.error('❌ התחבור ל-MongoDB נכשל:', error);
+    process.exit(1);
+  }
+};
+
+connectDB();
+
 app.use(cors());
 app.use(express.json());
+
+// 🔥 שינוי 2: מחברים את נתיבי ההרשמה וההתחברות שלך לשרת
+app.use('/api/auth', authRoutes);
 
 // הגדרת Interface לנתונים - זה הכוח של TS!
 interface TransactionSummary {
@@ -21,6 +44,7 @@ const mockTransactions: TransactionSummary[] = [
   { category: 'רכב', amount: 600, type: 'expense' },
   { category: 'פנאי', amount: 400, type: 'expense' },
 ];
+
 // נתוני דמה לגרף קווי (הוצאות לאורך השבוע)
 const mockTrendData = [
   { date: '01/05', amount: 400 },

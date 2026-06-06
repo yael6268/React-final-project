@@ -7,6 +7,7 @@ export interface TransactionDoc extends Document {
   category: string;
   date: Date;
   userId: string;
+  description?: string;
 }
 
 const transactionSchema = new Schema<TransactionDoc>({
@@ -16,6 +17,7 @@ const transactionSchema = new Schema<TransactionDoc>({
   category: { type: String, required: true },
   date: { type: Date, default: Date.now },
   userId: { type: String, required: true },
+  description: { type: String },
 }, {
   timestamps: true,
 });
