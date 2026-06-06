@@ -7,20 +7,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
-    "server": "cd server && npx ts-node --esm index.ts",
+    "server": "npx ts-node --esm src/index.ts",
     "both": "concurrently \"npm run dev\" \"npm run server\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.9.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }
