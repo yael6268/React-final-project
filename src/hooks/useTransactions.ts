@@ -38,9 +38,9 @@ export const useTransactions = (initialFilters: TransactionFilters = {}) => {
 
       setTransactions(response.data.transactions ?? []);
       setPagination({
-        total: response.data.totalTransactions ?? 0,
-        page: response.data.currentPage ?? filters.page ?? 1,
-        pages: response.data.totalPages ?? 1,
+        total: response.data.total ?? response.data.pagination?.total ?? 0,
+        page: response.data.page ?? response.data.pagination?.page ?? filters.page ?? 1,
+        pages: response.data.pages ?? response.data.pagination?.pages ?? 1,
       });
     } catch (error: any) {
       setErrorMessage(error?.response?.data?.message || 'שגיאה בטעינת התנועות');
