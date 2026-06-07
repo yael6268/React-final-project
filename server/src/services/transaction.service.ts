@@ -1,4 +1,4 @@
-import Transaction from '../models/Transaction.js'; // בהנחה שזה מודל Mongoose
+import Transaction from '../models/Transaction.ts'; // בהנחה שזה מודל Mongoose
 
 interface FilterOptions {
   page: number;

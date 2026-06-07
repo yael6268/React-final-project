@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import * as transactionService from '../services/transaction.service.js';
+import * as transactionService from '../services/transaction.service.ts';
 
 export const getTransactions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

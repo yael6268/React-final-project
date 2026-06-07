@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getTransactions, createTransaction } from './controllers/transaction.controller.js';
+import { getTransactions, createTransaction } from './controllers/transaction.controller.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +32,18 @@ app.get('/api/analytics/category-summary', (_req: Request, res: Response) => {
     { category: 'חשבונות', amount: 900 },
     { category: 'רכב', amount: 600 },
     { category: 'פנאי', amount: 400 },
+  ]);
+});
+
+app.get('/api/analytics/weekly-trends', (_req: Request, res: Response) => {
+  res.json([
+    { date: 'א׳', amount: 500 },
+    { date: 'ב׳', amount: 650 },
+    { date: 'ג׳', amount: 450 },
+    { date: 'ד׳', amount: 780 },
+    { date: 'ה׳', amount: 920 },
+    { date: 'ו׳', amount: 1100 },
+    { date: 'ש׳', amount: 800 },
   ]);
 });
 

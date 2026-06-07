@@ -1,6 +1,9 @@
-import { Request, Response } from 'express';
-import Transection from '../models/Transaction';
+import type { Request, Response } from 'express';
+import Transection from '../models/Transaction.js';
 import { z } from 'zod';
+
+// מקור אמת לקטגוריות - ישמש גם להצגה בצד הלקוח וגם לולידציה בצד השרת
+const CATEGORIES = ['מזון', 'מגורים', 'תחבורה', 'פנאי', 'בריאות', 'חשבונות'];
 
 // הגדרת ממשק (Interface) לתנועה בודדת - תואם ל-Schema
 interface ITransaction {
@@ -16,6 +19,8 @@ interface ITransaction {
 const transactionSchema = z.object({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
+    fromDate: z.string().optional(),
+    toDate: z.string().optional(),
     category: z.string().optional(),
     page: z.string().optional(),
     limit: z.string().optional()
@@ -58,10 +63,7 @@ export const getCategorySummary = async (req: Request, res: Response): Promise<v
         const categoriesMap: Record<string, number> = {};
 
         expenses.forEach(t => {
-            if (!categoriesMap[t.category]) {
-                categoriesMap[t.category] = 0;
-            }
-            categoriesMap[t.category] += t.amount;
+            categoriesMap[t.category] = (categoriesMap[t.category] || 0) + t.amount;
         });
 
         const formattedData = Object.keys(categoriesMap).map(cat => ({
@@ -111,20 +113,22 @@ export const getWeeklyTrends = async (req: Request, res: Response): Promise<void
 // פונקציה לקבלת רשימת עסקאות גולמית ומסוננת
 export const getTransactions = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { startDate, endDate, category, page = '1', limit = '10' } = req.query;
+        const { startDate, endDate, fromDate, toDate, category, page = '1', limit = '10' } = req.query;
+        const queryStart = (startDate as string) || (fromDate as string);
+        const queryEnd = (endDate as string) || (toDate as string);
         
         // ביצוע הולידציה של Zod
-        transactionSchema.parse({ startDate, endDate, category, page, limit });
+        transactionSchema.parse({ startDate: queryStart, endDate: queryEnd, category, page, limit });
 
         // @ts-ignore
         let query: any = { userId: req.user.id };
         
-        if (startDate && endDate) {
-            query.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
-        } else if (startDate) {
-            query.date = { $gte: new Date(startDate as string) };
-        } else if (endDate) {
-            query.date = { $lte: new Date(endDate as string) };
+        if (queryStart && queryEnd) {
+            query.date = { $gte: new Date(queryStart), $lte: new Date(queryEnd) };
+        } else if (queryStart) {
+            query.date = { $gte: new Date(queryStart) };
+        } else if (queryEnd) {
+            query.date = { $lte: new Date(queryEnd) };
         }
         
         if (category) {
@@ -151,21 +155,27 @@ export const getTransactions = async (req: Request, res: Response): Promise<any>
 // פונקציה ליצירת עסקה חדשה
 export const createTransaction = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { amount, type, category, date, description } = req.body;
+        const { title, amount, type, category, date } = req.body;
+        if (!title || typeof title !== 'string' || title.trim().length === 0) {
+            return res.status(400).json({ message: "נא להזין כותרת תקינה לתנועה" });
+        }
         if (!amount || amount <= 0) {
             return res.status(400).json({ message: "נא להזין סכום חיובי ותקין" });
         }
         if (!['income', 'expense'].includes(type)) {
             return res.status(400).json({ message: "סוג התנועה חייב להיות הכנסה או הוצאה" });
         }
+        if (category && !CATEGORIES.includes(category)) {
+            return res.status(400).json({ message: "קטגוריה לא תקינה" });
+        }
         const transaction = new Transection({
             // @ts-ignore
             userId: req.user.id,
+            title,
             amount,
             type,
             category,
             date,
-            description
         });
         await transaction.save();
         res.status(201).json(transaction);
@@ -193,12 +203,15 @@ export const deleteTransaction = async (req: Request, res: Response): Promise<an
 // פונקציה לעדכון עסקה
 export const updateTransaction = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { amount, type, category, date, description } = req.body;
+        const { title, amount, type, category, date } = req.body;
         if (amount && amount <= 0) {
             return res.status(400).json({ message: "נא להזין סכום חיובי ותקין" });
         }
         if (type && !['income', 'expense'].includes(type)) {
             return res.status(400).json({ message: "סוג התנועה חייב להיות הכנסה או הוצאה" });
+        }
+        if (category && !CATEGORIES.includes(category)) {
+            return res.status(400).json({ message: "קטגוריה לא תקינה" });
         }
         
         // @ts-ignore
@@ -207,15 +220,24 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
             return res.status(404).json({ message: "העסקה לא נמצאה או שאינה שייכת לך" });
         }   
         
+        transaction.title = title || transaction.title;
         transaction.amount = amount || transaction.amount;
         transaction.type = type || transaction.type;
         transaction.category = category || transaction.category;
         transaction.date = date || transaction.date;
-        transaction.description = description || transaction.description;
         
         await transaction.save();
         res.json(transaction);
     } catch (err: any) {
         res.status(500).json({ message: err.message });
+    }
+};
+
+// החזרת רשימת הקטגוריות לשימוש בלקוח
+export const getCategories = async (_req: Request, res: Response): Promise<void> => {
+    try {
+        res.json(CATEGORIES);
+    } catch (err) {
+        res.status(500).json({ message: 'שגיאה בטעינת קטגוריות' });
     }
 };
