@@ -6,11 +6,25 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getTransactions, createTransaction, getCategories } from './controllers/transaction.controller.ts';
 import { seedCategories } from './seed/seedCategories.ts';
-
+// 🔥 הוספנו: ייבוא של פונקציית אימות JWT אמיתית
+import { authenticateToken } from './middlewares/auth.middleware.ts';
+// 🔥 הוספנו: ייבוא של פונקציות ההרשמה וההתחברות שלך
+import { register, login } from './controllers/auth.controller.ts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+// Debug: show which .env path is loaded and whether MONGODB_URI is present (masked)
+const envPath = path.resolve(__dirname, '../../.env');
+try {
+  const uri = process.env.MONGODB_URI;
+  const masked = uri ? uri.replace(/:(?:[^:@]+)@/, ':****@') : undefined;
+  console.log('Loaded .env from:', envPath);
+  console.log('MONGODB_URI present:', !!uri, masked ? `${masked.slice(0, 80)}...` : '');
+} catch (e) {
+  console.warn('Failed to read MONGODB_URI from env', e);
+}
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5000);
@@ -18,12 +32,11 @@ const PORT = Number(process.env.PORT ?? 5000);
 app.use(cors());
 app.use(express.json());
 
-const fakeAuth = (req: Request, _res: Response, next: NextFunction) => {
-  (req as any).user = { id: 'demo-user' };
-  next();
-};
+// 🔥 הוספנו: הנתיבים האמיתיים של ההרשמה וההתחברות למערכת
+app.post('/api/auth/register', register);
+app.post('/api/auth/login', login);
 
-app.use('/api/transactions', fakeAuth);
+app.use('/api/transactions', authenticateToken);
 app.get('/api/transactions', getTransactions);
 app.post('/api/transactions', createTransaction);
 app.get('/api/transactions/categories', getCategories);

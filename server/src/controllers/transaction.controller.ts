@@ -4,7 +4,11 @@ import Category from '../models/Category.ts';
 
 export const getTransactions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = (req as any).user.id; // מגיע מהמידלוור של מפתחת 1
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
     
     // שליפת פרמטרים לפגינציה וסינון
     const page = parseInt(req.query.page as string) || 1;
@@ -27,7 +31,11 @@ export const getTransactions = async (req: Request, res: Response, next: NextFun
 
 export const createTransaction = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = (req as any).user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
     const transactionData = req.body;
 
     const newTransaction = await transactionService.addTransaction(userId, transactionData);

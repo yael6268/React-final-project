@@ -34,7 +34,7 @@ const transactionSchema = z.object({
 export const getAnalyticsSummary = async (req: Request, res: Response): Promise<void> => {
     try {
         // @ts-ignore
-        const transactions = await Transection.find({ userId: req.user.id }) as ITransaction[];
+        const transactions = await Transaction.find({ userId: req.user.id }) as ITransaction[];
 
         const totalIncome = transactions
             .filter(t => t.type === 'income')
@@ -58,12 +58,12 @@ export const getAnalyticsSummary = async (req: Request, res: Response): Promise<
 export const getCategorySummary = async (req: Request, res: Response): Promise<void> => {
     try {
         // @ts-ignore
-        const expenses = await Transection.find({ userId: req.user.id, type: 'expense' }) as ITransaction[];
+        const expenses = await Transaction.find({ userId: req.user.id, type: 'expense' }) as ITransaction[];
 
         const categoriesMap: Record<string, number> = {};
 
         expenses.forEach(t => {
-            categoriesMap[t.category] = (categoriesMap[t.category] || 0) + t.amount;
+            categoriesMap[t.category] = (categoriesMap[t.category] ?? 0) + t.amount;
         });
 
         const formattedData = Object.keys(categoriesMap).map(cat => ({
@@ -81,7 +81,7 @@ export const getCategorySummary = async (req: Request, res: Response): Promise<v
 export const getWeeklyTrends = async (req: Request, res: Response): Promise<void> => {
     try {
         // @ts-ignore
-        const expenses = await Transection.find({ userId: req.user.id, type: 'expense' }).sort({ date: 1 }) as ITransaction[];
+        const expenses = await Transaction.find({ userId: req.user.id, type: 'expense' }).sort({ date: 1 }) as ITransaction[];
 
         const trendsMap: Record<string, number> = {};
 
@@ -138,8 +138,8 @@ export const getTransactions = async (req: Request, res: Response): Promise<any>
         const limitNum = Number(limit);
         const pageNum = Number(page);
 
-        const transactions = await Transection.find(query).sort({ date: -1 }).limit(limitNum).skip((pageNum - 1) * limitNum);
-        const total = await Transection.countDocuments(query);
+        const transactions = await Transaction.find(query).sort({ date: -1 }).limit(limitNum).skip((pageNum - 1) * limitNum);
+        const total = await Transaction.countDocuments(query);
         
         res.json({
             transactions,
@@ -188,7 +188,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<an
 export const deleteTransaction = async (req: Request, res: Response): Promise<any> => {
     try {
         // @ts-ignore
-        const transaction = await Transection.findOne({ _id: req.params.id, userId: req.user.id });
+        const transaction = await Transaction.findOne({ _id: req.params.id, userId: req.user.id });
         if (!transaction) {
             return res.status(404).json({ message: "העסקה לא נמצאה או שאינה שייכת לך" });
         }
@@ -215,7 +215,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<an
         }
         
         // @ts-ignore
-        const transaction = await Transection.findOne({ _id: req.params.id, userId: req.user.id });
+        const transaction = await Transaction.findOne({ _id: req.params.id, userId: req.user.id });
         if (!transaction) {
             return res.status(404).json({ message: "העסקה לא נמצאה או שאינה שייכת לך" });
         }   
