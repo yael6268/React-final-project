@@ -20,14 +20,9 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
-<<<<<<< HEAD
-    "express": "^4.22.2",
-    "mongoose": "^7.8.9",
-=======
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^7.0.0",
->>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
+    "mongoose": "^7.8.9",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.77.0",
@@ -40,12 +35,8 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.25",
-<<<<<<< HEAD
-    "@types/node": "^24.13.1",
-=======
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.12.4",
->>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
+    "@types/node": "^24.13.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -58,8 +49,7 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-<<<<<<< HEAD
-    "vite": "^8.0.12"
+    "vite": "^8.0.16"
   },
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   "main": "eslint.config.js",
@@ -74,8 +64,4 @@
     "url": "https://github.com/yael6268/React-final-project/issues"
   },
   "homepage": "https://github.com/yael6268/React-final-project#readme"
-=======
-    "vite": "^8.0.16"
-  }
->>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
 }
