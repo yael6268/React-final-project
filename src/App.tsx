@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
@@ -6,35 +7,36 @@ import heroImg from './assets/hero.png'
 import Dashboard from './components/Dashboard';
 import BudgetManagementPage from './pages/BudgetManagementPage';
 import './App.css'
+=======
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
+import './App.css';
+>>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      {/* <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section> */}
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* ✅ תוקן מ-path ל-Route! */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-      {/* <div className="ticks"></div> */}
+          {/* 🛡️ דף מוגן */}
+          <Route
+            path="/dashboard"
+            element = {
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
+<<<<<<< HEAD
       {/* <section id="next-steps">
         <div id="docs">
           <svg className="icon" role="presentation" aria-hidden="true">
@@ -123,6 +125,14 @@ function App() {
     </>
     
   )
+=======
+          {/* נתיב ברירת מחדל */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+>>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
 }
 
-export default App
+export default App;
