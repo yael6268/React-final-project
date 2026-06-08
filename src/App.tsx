@@ -2,7 +2,9 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+// Temporary: render BudgetManagementPage for verification
 import Dashboard from './components/Dashboard';
+import BudgetManagementPage from './pages/BudgetManagementPage';
 import './App.css'
 
 function App() {
@@ -116,7 +118,8 @@ function App() {
 {/* 
       <div className="ticks"></div>
       <section id="spacer"></section> */}
-      <Dashboard />
+      {/* Render BudgetManagementPage to verify your work */}
+      <BudgetManagementPage />
     </>
     
   )

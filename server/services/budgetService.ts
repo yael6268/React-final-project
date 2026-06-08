@@ -1,4 +1,4 @@
-import Budget from "../models/Budget";
+import Budget from "../models/Budget.js"
 import User from "../models/User";
 import Transaction from "../models/Transaction";
 
@@ -60,21 +60,31 @@ export const getBudgetsByMonth = async (
 
 export const getBudgetStatus = async (
     userId: string,
-     month: number,
+    month: number,
     year: number
 ): Promise<any[]> => {
+
     const budgets = await Budget.find({
         userId,
         month,
         year,
     });
 
+    const startDate = new Date(year, month - 1, 1);
+
+    const endDate = new Date(year, month, 1);
+
     const transactions = await Transaction.find({
         userId,
         type: "expense",
+        date: {
+            $gte: startDate,
+            $lt: endDate,
+        },
     });
 
     const result = budgets.map((budget: any) => {
+
         const categoryTransactions = transactions.filter(
             (t: any) => t.category === budget.category
         );
@@ -86,7 +96,10 @@ export const getBudgetStatus = async (
 
         const remaining = budget.limit - spent;
 
-        const percentage = (spent / budget.limit) * 100;
+        const percentage =
+            budget.limit > 0
+                ? (spent / budget.limit) * 100
+                : 0;
 
         return {
             category: budget.category,

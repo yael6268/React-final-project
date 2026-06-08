@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import * as budgetService from "../service/budgetService";
+import * as budgetService from "../services/budgetService.js";
 
 // אחרי שאני מחברת את ה ענף שלי ל middleware אני יצטרך לשנות שיקח את  userId מה token של המשתמש ולא מה פרמטרים של ה url כמו שעשיתי פה עכשיו
 
