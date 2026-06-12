@@ -1,12 +1,34 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000';
+// Vite exposes env variables via import.meta.env
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Get token from localStorage
 const getToken = () => localStorage.getItem('token');
 
-// Get userId from localStorage
-const getUserId = () => localStorage.getItem('userId');
+const getUserIdFromToken = (token: string | null) => {
+  if (!token) return null;
+
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const decoded = JSON.parse(atob(payload));
+    return decoded.userId || decoded.id || null;
+  } catch {
+    return null;
+  }
+};
+
+// Get userId from localStorage or from the JWT payload
+const getUserId = () => localStorage.getItem('userId') || getUserIdFromToken(getToken());
+
+const ensureUserId = () => {
+  const userId = getUserId();
+  if (!userId) {
+    throw new Error('Missing user id. Please log in again.');
+  }
+  return userId;
+};
 
 // Create axios instance with default headers
 const api = axios.create({
@@ -26,21 +48,21 @@ api.interceptors.request.use((config) => {
 
 // Get all budgets for current user
 export const getAllBudgets = async () => {
-  const userId = getUserId();
+  const userId = ensureUserId();
   const response = await api.get(`/budgets/user/${userId}`);
   return response.data;
 };
 
 // Get budgets by month/year
 export const getBudgetsByMonth = async (month: number, year: number) => {
-  const userId = getUserId();
+  const userId = ensureUserId();
   const response = await api.get(`/budgets/user/${userId}/month/${month}/year/${year}`);
   return response.data;
 };
 
 // Get budget status with spent amounts
 export const getBudgetStatus = async (month: number, year: number) => {
-  const userId = getUserId();
+  const userId = ensureUserId();
   const response = await api.get(`/budgets/status/user/${userId}/month/${month}/year/${year}`);
   return response.data;
 };
@@ -52,7 +74,8 @@ export const createBudget = async (data: {
   month: number;
   year: number;
 }) => {
-  const response = await api.post('/budgets', data);
+  const userId = ensureUserId();
+  const response = await api.post('/budgets', { ...data, userId });
   return response.data;
 };
 
@@ -61,7 +84,8 @@ export const updateBudget = async (
   id: string,
   data: { category?: string; limit?: number; month?: number; year?: number }
 ) => {
-  const response = await api.put(`/budgets/${id}`, data);
+  const userId = ensureUserId();
+  const response = await api.put(`/budgets/${id}`, { ...data, userId });
   return response.data;
 };
 

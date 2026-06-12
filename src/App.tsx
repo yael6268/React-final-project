@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { useState } from 'react'
+/*import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -7,37 +6,35 @@ import heroImg from './assets/hero.png'
 import Dashboard from './components/Dashboard';
 import BudgetManagementPage from './pages/BudgetManagementPage';
 import './App.css'
-=======
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
 import './App.css';
->>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
+
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* ✅ תוקן מ-path ל-Route! */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* ✅ תוקן מ-path ל-Route! *//*}*
+      /*    <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />*/
 
-          {/* 🛡️ דף מוגן */}
-          <Route
-            path="/dashboard"
-            element = {
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+{/* 🛡️ דף מוגן */ }
+/*<Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  }
+/>*/
 
-<<<<<<< HEAD
-      {/* <section id="next-steps">
+
+{/* <section id="next-steps">
         <div id="docs">
           <svg className="icon" role="presentation" aria-hidden="true">
             <use href="/icons.svg#documentation-icon"></use>
@@ -120,19 +117,63 @@ function App() {
 {/* 
       <div className="ticks"></div>
       <section id="spacer"></section> */}
-      {/* Render BudgetManagementPage to verify your work */}
-      <BudgetManagementPage />
-    </>
-    
-  )
-=======
-          {/* נתיב ברירת מחדל */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+{/* Render BudgetManagementPage to verify your work */ }
+//<BudgetManagementPage />
+//</>
+
+///)
+{/* נתיב ברירת מחדל */ }
+//<Route path="*" element={<Navigate to="/dashboard" replace />} />
+//</Routes>
+//</BrowserRouter>
+//</AuthProvider>
+//);
+//}
+
+//export default App;
+
+
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
+import BudgetManagementPage from './pages/BudgetManagementPage';
+import './App.css';
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/budget"
+            element={
+              <ProtectedRoute>
+                <BudgetManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
->>>>>>> dadfe97cbc65c6d6c7ec8999ed884df2702f36ae
 }
 
 export default App;

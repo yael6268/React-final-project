@@ -50,9 +50,9 @@ export default function Login() {
 
       setIsError(false);
       
-      // 🔥 הנה השורות שהחלפנו ומעדכנות את האפליקציה בזמן אמת:
-      login(resData.token); // מעדכן את הסטייט הגלובלי שאת מחוברת!
-      navigate('/dashboard'); // מעביר אותך אוטומטית ל-Dashboard!
+      // After login, go to the budget page and keep the logged-in user id for API calls
+      login(resData.token, resData.user?.id);
+      navigate('/budget');
       
     } catch (error: any) {
       setIsError(true);
