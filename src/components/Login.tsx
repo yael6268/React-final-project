@@ -42,21 +42,27 @@ export default function Login() {
         body: JSON.stringify(data),
       });
 
-      const resData = await response.json();
+      let resData: any = {};
+      try {
+        resData = await response.json();
+      } catch {
+        resData = {};
+      }
 
       if (!response.ok) {
         throw new Error(resData.message || 'שגיאה בהתחברות. בדקי את הפרטים.');
       }
 
       setIsError(false);
-      
-      // After login, go to the budget page and keep the logged-in user id for API calls
+
       login(resData.token, resData.user?.id);
       navigate('/budget');
-      
     } catch (error: any) {
       setIsError(true);
-      setServerMessage(error.message);
+      const message = error instanceof TypeError && error.message.includes('Failed to fetch')
+        ? 'השרת לא זמין כרגע. נסי לנסות שוב בעוד מספר רגעים.'
+        : error.message || 'שגיאה בהתחברות.';
+      setServerMessage(message);
     } finally {
       setIsLoading(false);
     }

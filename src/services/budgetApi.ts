@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Vite exposes env variables via import.meta.env
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 // Get token from localStorage
 const getToken = () => localStorage.getItem('token');
@@ -27,6 +27,7 @@ const ensureUserId = () => {
   if (!userId) {
     throw new Error('Missing user id. Please log in again.');
   }
+ 
   return userId;
 };
 
@@ -49,21 +50,21 @@ api.interceptors.request.use((config) => {
 // Get all budgets for current user
 export const getAllBudgets = async () => {
   const userId = ensureUserId();
-  const response = await api.get(`/budgets/user/${userId}`);
+  const response = await api.get(`/api/budgets/user/${userId}`);
   return response.data;
 };
 
 // Get budgets by month/year
 export const getBudgetsByMonth = async (month: number, year: number) => {
   const userId = ensureUserId();
-  const response = await api.get(`/budgets/user/${userId}/month/${month}/year/${year}`);
+  const response = await api.get(`/api/budgets/user/${userId}/month/${month}/year/${year}`);
   return response.data;
 };
 
 // Get budget status with spent amounts
 export const getBudgetStatus = async (month: number, year: number) => {
   const userId = ensureUserId();
-  const response = await api.get(`/budgets/status/user/${userId}/month/${month}/year/${year}`);
+  const response = await api.get(`/api/budgets/status/user/${userId}/month/${month}/year/${year}`);
   return response.data;
 };
 
@@ -75,7 +76,7 @@ export const createBudget = async (data: {
   year: number;
 }) => {
   const userId = ensureUserId();
-  const response = await api.post('/budgets', { ...data, userId });
+  const response = await api.post('/api/budgets', { ...data, userId });
   return response.data;
 };
 
@@ -85,13 +86,13 @@ export const updateBudget = async (
   data: { category?: string; limit?: number; month?: number; year?: number }
 ) => {
   const userId = ensureUserId();
-  const response = await api.put(`/budgets/${id}`, { ...data, userId });
+  const response = await api.put(`/api/budgets/${id}`, { ...data, userId });
   return response.data;
 };
 
 // Delete budget
 export const deleteBudget = async (id: string) => {
-  const response = await api.delete(`/budgets/${id}`);
+  const response = await api.delete(`/api/budgets/${id}`);
   return response.data;
 };
 

@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  BarChart,
+  Bar,
+  Cell,
+  CartesianGrid,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import * as api from '../services/budgetApi';
-
+import * as transactionApi from '../services/transactionApi';
 
 interface BudgetStatus {
   category: string;
@@ -11,18 +25,39 @@ interface BudgetStatus {
   isOverBudget: boolean;
 }
 
+interface TransactionItem {
+  _id: string;
+  amount: number;
+  type: 'income' | 'expense';
+  category: string;
+  date: string;
+  description?: string;
+}
+
 const BudgetDashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const [statuses, setStatuses] = useState<BudgetStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [transactionSaving, setTransactionSaving] = useState(false);
+  const [transactionMessage, setTransactionMessage] = useState<string | null>(null);
 
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [sortBy, setSortBy] = useState<'category' | 'spent' | 'percentage' | 'overbudget'>('overbudget');
+  const [transactionForm, setTransactionForm] = useState({
+    amount: '',
+    type: 'expense' as 'income' | 'expense',
+    category: 'Food',
+    date: new Date().toISOString().slice(0, 10),
+    description: '',
+  });
 
-  // Fetch status on mount and when month/year change
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
+    void fetchTransactions();
   }, [month, year]);
 
   // Auto-clear error
@@ -43,6 +78,57 @@ const BudgetDashboardPage: React.FC = () => {
       setError(err.response?.data?.error || 'Failed to fetch budget status');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      setTransactionsLoading(true);
+      const startDate = new Date(year, month - 1, 1).toISOString();
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+      const response = await transactionApi.getTransactions(1, 8, { startDate, endDate });
+      setTransactions(response?.transactions || []);
+      setTransactionMessage(null);
+    } catch (err: any) {
+      setTransactionMessage(err.response?.data?.message || 'Failed to load transactions');
+    } finally {
+      setTransactionsLoading(false);
+    }
+  };
+
+  const handleTransactionSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const amount = Number(transactionForm.amount);
+    if (!transactionForm.category.trim() || !transactionForm.date || Number.isNaN(amount) || amount <= 0) {
+      setTransactionMessage('Please enter a valid amount, category, and date.');
+      return;
+    }
+
+    try {
+      setTransactionSaving(true);
+      await transactionApi.createTransaction({
+        amount,
+        type: transactionForm.type,
+        category: transactionForm.category.trim(),
+        date: transactionForm.date,
+        description: transactionForm.description.trim() || undefined,
+      });
+
+      setTransactionMessage('Transaction added successfully.');
+      setTransactionForm({
+        amount: '',
+        type: 'expense',
+        category: 'Food',
+        date: new Date().toISOString().slice(0, 10),
+        description: '',
+      });
+      await fetchStatus();
+      await fetchTransactions();
+    } catch (err: any) {
+      setTransactionMessage(err.response?.data?.message || 'Failed to add transaction');
+    } finally {
+      setTransactionSaving(false);
     }
   };
 
@@ -68,6 +154,13 @@ const BudgetDashboardPage: React.FC = () => {
   const totalRemaining = totalBudget - totalSpent;
   const averagePercentage = statuses.length ? Math.round(statuses.reduce((sum, s) => sum + s.percentage, 0) / statuses.length) : 0;
   const overBudgetCount = statuses.filter((s) => s.isOverBudget).length;
+  const chartData = statuses.map((status) => ({
+    name: status.category,
+    budget: status.limit,
+    spent: status.spent,
+    remaining: Math.max(status.remaining, 0),
+  }));
+  const pieColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
@@ -77,10 +170,28 @@ const BudgetDashboardPage: React.FC = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', color: '#111' }}>
-          Budget Dashboard
-        </h1>
-        <p style={{ color: '#666', marginBottom: '2rem' }}>Track your spending and budget status</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#111' }}>
+              Budget Dashboard
+            </h1>
+            <p style={{ color: '#666', margin: 0 }}>Track your spending and budget status</p>
+          </div>
+          <button
+            onClick={() => navigate('/budget/manage')}
+            style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.75rem',
+              padding: '0.75rem 1rem',
+              cursor: 'pointer',
+              fontWeight: '700',
+            }}
+          >
+            ערוך תקציב
+          </button>
+        </div>
 
         {/* Error Alert */}
         {error && (
@@ -160,6 +271,116 @@ const BudgetDashboardPage: React.FC = () => {
           </div>
         </div>
 
+        <div style={{ backgroundColor: 'white', padding: '1.25rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <h3 style={{ margin: 0, color: '#111' }}>Add a transaction</h3>
+              <p style={{ margin: '0.25rem 0 0 0', color: '#666' }}>Record income or expense directly in your budget view.</p>
+            </div>
+            <div style={{ color: '#3b82f6', fontWeight: '600' }}>Visible in the app</div>
+          </div>
+
+          <form onSubmit={handleTransactionSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Amount</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={transactionForm.amount}
+                onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Type</label>
+              <select
+                value={transactionForm.type}
+                onChange={(e) => setTransactionForm({ ...transactionForm, type: e.target.value as 'income' | 'expense' })}
+                style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+              >
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Category</label>
+              <input
+                type="text"
+                value={transactionForm.category}
+                onChange={(e) => setTransactionForm({ ...transactionForm, category: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+                placeholder="Food"
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Date</label>
+              <input
+                type="date"
+                value={transactionForm.date}
+                onChange={(e) => setTransactionForm({ ...transactionForm, date: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Description</label>
+              <input
+                type="text"
+                value={transactionForm.description}
+                onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+                placeholder="Optional note"
+              />
+            </div>
+
+            <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+              <button
+                type="submit"
+                disabled={transactionSaving}
+                style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.7rem 1rem', cursor: transactionSaving ? 'not-allowed' : 'pointer', fontWeight: '700' }}
+              >
+                {transactionSaving ? 'Saving...' : 'Add transaction'}
+              </button>
+              {transactionMessage && (
+                <span style={{ color: transactionMessage.includes('successfully') ? '#16a34a' : '#dc2626', fontWeight: '600' }}>
+                  {transactionMessage}
+                </span>
+              )}
+            </div>
+          </form>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#111' }}>Recent transactions</h4>
+            {transactionsLoading ? (
+              <p style={{ margin: 0, color: '#666' }}>Loading transactions...</p>
+            ) : transactions.length === 0 ? (
+              <p style={{ margin: 0, color: '#666' }}>No transactions yet for this period.</p>
+            ) : (
+              <div style={{ display: 'grid', gap: '0.5rem' }}>
+                {transactions.map((item) => (
+                  <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0.9rem', border: '1px solid #e5e7eb', borderRadius: '0.5rem', backgroundColor: '#f9fafb' }}>
+                    <div>
+                      <div style={{ fontWeight: '700', color: '#111' }}>{item.category}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#666' }}>{new Date(item.date).toLocaleDateString('en-GB')} {item.description ? `• ${item.description}` : ''}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: '700', color: item.type === 'expense' ? '#dc2626' : '#16a34a' }}>
+                        {item.type === 'expense' ? '-' : '+'}{item.amount.toLocaleString()} ILS
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#666', textTransform: 'capitalize' }}>{item.type}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Summary Cards */}
         {!loading && statuses.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
@@ -195,6 +416,53 @@ const BudgetDashboardPage: React.FC = () => {
                 {overBudgetCount}
               </p>
               <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.25rem 0 0 0' }}>of {statuses.length} categories</p>
+            </div>
+          </div>
+        )}
+
+        {!loading && statuses.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ backgroundColor: 'white', padding: '1.25rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ margin: '0 0 1rem 0', color: '#111' }}>השימוש בכל קטגוריה</h3>
+              <div style={{ width: '100%', height: 260 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="budget" fill="#3b82f6" name="תקציב" />
+                    <Bar dataKey="spent" fill="#ef4444" name="שימוש" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: 'white', padding: '1.25rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ margin: '0 0 1rem 0', color: '#111' }}>שארית התקציב לכל קטגוריה</h3>
+              <div style={{ width: '100%', height: 260 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      dataKey="remaining"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={90}
+                      paddingAngle={2}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`${entry.name}-${index}`} fill={pieColors[index % pieColors.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}

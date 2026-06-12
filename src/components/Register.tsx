@@ -43,7 +43,12 @@ export default function Register() {
         body: JSON.stringify(data),
       });
 
-      const resData = await response.json();
+      let resData: any = {};
+      try {
+        resData = await response.json();
+      } catch {
+        resData = {};
+      }
 
       if (!response.ok) {
         throw new Error(resData.message || 'משהו השתבש בהרשמה');
@@ -51,10 +56,13 @@ export default function Register() {
 
       setIsError(false);
       setServerMessage('ההרשמה הצליחה! עכשיו אפשר להתחבר.');
-      reset(); // איפוס הטופס בסיום מוצלח
+      reset();
     } catch (error: any) {
       setIsError(true);
-      setServerMessage(error.message);
+      const message = error instanceof TypeError && error.message.includes('Failed to fetch')
+        ? 'השרת לא זמין כרגע. נסי לנסות שוב בעוד מספר רגעים.'
+        : error.message || 'שגיאה בהרשמה.';
+      setServerMessage(message);
     } finally {
       setIsLoading(false);
     }
