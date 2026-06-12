@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
@@ -13,12 +14,22 @@ import Login from './components/Login';
 import Register from './components/Register';
 import './App.css';
 
+=======
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import Login from './components/Login'
+import Register from './components/Register'
+import Dashboard from './components/Dashboard'
+import './App.css'
+>>>>>>> 96b5492e52066f0ce06fa40401cf3e9796d38ee3
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+<<<<<<< HEAD
           {/* ✅ תוקן מ-path ל-Route! *//*}*
       /*    <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />*/
@@ -174,6 +185,19 @@ function App() {
       </BrowserRouter>
     </AuthProvider>
   );
+=======
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
+>>>>>>> 96b5492e52066f0ce06fa40401cf3e9796d38ee3
 }
 
-export default App;
+export default App
