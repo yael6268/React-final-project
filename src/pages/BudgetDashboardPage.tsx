@@ -43,6 +43,7 @@ const BudgetDashboardPage: React.FC = () => {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [transactionSaving, setTransactionSaving] = useState(false);
   const [transactionMessage, setTransactionMessage] = useState<string | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -60,6 +61,12 @@ const BudgetDashboardPage: React.FC = () => {
     void fetchTransactions();
   }, [month, year]);
 
+  useEffect(() => {
+    if (availableCategories.length > 0 && !availableCategories.includes(transactionForm.category)) {
+      setTransactionForm((prev) => ({ ...prev, category: availableCategories[0] }));
+    }
+  }, [availableCategories, transactionForm.category]);
+
   // Auto-clear error
   useEffect(() => {
     if (error) {
@@ -73,9 +80,10 @@ const BudgetDashboardPage: React.FC = () => {
       setLoading(true);
       const data = await api.getBudgetStatus(month, year);
       setStatuses(data || []);
+      setAvailableCategories((data || []).map((item: BudgetStatus) => item.category).filter(Boolean));
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch budget status');
+      setError(err.response?.data?.error || 'נכשל בטעינת סטטוס התקציב');
     } finally {
       setLoading(false);
     }
@@ -90,7 +98,7 @@ const BudgetDashboardPage: React.FC = () => {
       setTransactions(response?.transactions || []);
       setTransactionMessage(null);
     } catch (err: any) {
-      setTransactionMessage(err.response?.data?.message || 'Failed to load transactions');
+      setTransactionMessage(err.response?.data?.message || 'נכשל בטעינת התנועות');
     } finally {
       setTransactionsLoading(false);
     }
@@ -100,8 +108,16 @@ const BudgetDashboardPage: React.FC = () => {
     event.preventDefault();
 
     const amount = Number(transactionForm.amount);
-    if (!transactionForm.category.trim() || !transactionForm.date || Number.isNaN(amount) || amount <= 0) {
-      setTransactionMessage('Please enter a valid amount, category, and date.');
+    const normalizedCategory = transactionForm.category.trim();
+    const categoryIsValid = availableCategories.some((category) => category.toLowerCase() === normalizedCategory.toLowerCase());
+
+    if (!normalizedCategory || !transactionForm.date || Number.isNaN(amount) || amount <= 0) {
+      setTransactionMessage('יש להזין סכום תקין, קטגוריה ותאריך.');
+      return;
+    }
+
+    if (!categoryIsValid) {
+      setTransactionMessage('הקטגוריה אינה קיימת בתקציב הנוכחי. יש לבחור קטגוריה קיימת או ליצור תקציב לקטגוריה זו תחילה.');
       return;
     }
 
@@ -110,12 +126,12 @@ const BudgetDashboardPage: React.FC = () => {
       await transactionApi.createTransaction({
         amount,
         type: transactionForm.type,
-        category: transactionForm.category.trim(),
+        category: normalizedCategory,
         date: transactionForm.date,
         description: transactionForm.description.trim() || undefined,
       });
 
-      setTransactionMessage('Transaction added successfully.');
+      setTransactionMessage('התנועה נוספה בהצלחה.');
       setTransactionForm({
         amount: '',
         type: 'expense',
@@ -126,7 +142,7 @@ const BudgetDashboardPage: React.FC = () => {
       await fetchStatus();
       await fetchTransactions();
     } catch (err: any) {
-      setTransactionMessage(err.response?.data?.message || 'Failed to add transaction');
+      setTransactionMessage(err.response?.data?.message || 'הוספת התנועה נכשלה');
     } finally {
       setTransactionSaving(false);
     }
@@ -164,23 +180,23 @@ const BudgetDashboardPage: React.FC = () => {
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
-  const months = Array.from({ length: 12 }, (_, i) => ({ num: i + 1, name: new Date(2000, i).toLocaleDateString('en', { month: 'long' }) }));
+  const months = Array.from({ length: 12 }, (_, i) => ({ num: i + 1, name: new Date(2000, i).toLocaleDateString('he', { month: 'long' }) }));
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#111' }}>
-              Budget Dashboard
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#0f172a' }}>
+              לוח תקציב
             </h1>
-            <p style={{ color: '#666', margin: 0 }}>Track your spending and budget status</p>
+            <p style={{ color: '#475569', margin: 0 }}>עקוב אחרי ההוצאות, התקציב והמצב שלך</p>
           </div>
           <button
             onClick={() => navigate('/budget/manage')}
             style={{
-              backgroundColor: '#3b82f6',
+              backgroundColor: '#2563eb',
               color: 'white',
               border: 'none',
               borderRadius: '0.75rem',
@@ -201,10 +217,10 @@ const BudgetDashboardPage: React.FC = () => {
         )}
 
         {/* Filters */}
-        <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '0.85rem', marginBottom: '1.5rem', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.5rem' }}>
-              Month
+              חודש
             </label>
             <select
               value={month}
@@ -227,7 +243,7 @@ const BudgetDashboardPage: React.FC = () => {
 
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.5rem' }}>
-              Year
+              שנה
             </label>
             <select
               value={year}
@@ -250,7 +266,7 @@ const BudgetDashboardPage: React.FC = () => {
 
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.5rem' }}>
-              Sort By
+              מיון לפי
             </label>
             <select
               value={sortBy}
@@ -263,26 +279,26 @@ const BudgetDashboardPage: React.FC = () => {
                 boxSizing: 'border-box',
               }}
             >
-              <option value="overbudget">Over Budget First</option>
-              <option value="percentage">Spending %</option>
-              <option value="spent">Amount Spent</option>
-              <option value="category">Category</option>
+              <option value="overbudget">חריגות ראשונות</option>
+              <option value="percentage">אחוז שימוש</option>
+              <option value="spent">סכום שהוצא</option>
+              <option value="category">קטגוריה</option>
             </select>
           </div>
         </div>
 
-        <div style={{ backgroundColor: 'white', padding: '1.25rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '1.5rem' }}>
+        <div style={{ backgroundColor: 'white', padding: '1.25rem', borderRadius: '0.9rem', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <h3 style={{ margin: 0, color: '#111' }}>Add a transaction</h3>
-              <p style={{ margin: '0.25rem 0 0 0', color: '#666' }}>Record income or expense directly in your budget view.</p>
+              <h3 style={{ margin: 0, color: '#0f172a' }}>הוסף תנועה</h3>
+              <p style={{ margin: '0.25rem 0 0 0', color: '#64748b' }}>רשום הכנסה או הוצאה ישירות בתוך לוח התקציב.</p>
             </div>
-            <div style={{ color: '#3b82f6', fontWeight: '600' }}>Visible in the app</div>
+            <div style={{ color: '#2563eb', fontWeight: '600' }}>זמין ישירות באפליקציה</div>
           </div>
 
           <form onSubmit={handleTransactionSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Amount</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#334155', marginBottom: '0.35rem' }}>סכום</label>
               <input
                 type="number"
                 min="0"
@@ -295,30 +311,44 @@ const BudgetDashboardPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Type</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#334155', marginBottom: '0.35rem' }}>סוג</label>
               <select
                 value={transactionForm.type}
                 onChange={(e) => setTransactionForm({ ...transactionForm, type: e.target.value as 'income' | 'expense' })}
                 style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
               >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
+                <option value="expense">הוצאה</option>
+                <option value="income">הכנסה</option>
               </select>
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Category</label>
-              <input
-                type="text"
-                value={transactionForm.category}
-                onChange={(e) => setTransactionForm({ ...transactionForm, category: e.target.value })}
-                style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
-                placeholder="Food"
-              />
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#334155', marginBottom: '0.35rem' }}>קטגוריה</label>
+              {availableCategories.length > 0 ? (
+                <select
+                  value={transactionForm.category}
+                  onChange={(e) => setTransactionForm({ ...transactionForm, category: e.target.value })}
+                  style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+                >
+                  {availableCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={transactionForm.category}
+                  onChange={(e) => setTransactionForm({ ...transactionForm, category: e.target.value })}
+                  style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
+                  placeholder="הקלד קטגוריה"
+                />
+              )}
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Date</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#334155', marginBottom: '0.35rem' }}>תאריך</label>
               <input
                 type="date"
                 value={transactionForm.date}
@@ -328,13 +358,13 @@ const BudgetDashboardPage: React.FC = () => {
             </div>
 
             <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#333', marginBottom: '0.35rem' }}>Description</label>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#334155', marginBottom: '0.35rem' }}>הערה</label>
               <input
                 type="text"
                 value={transactionForm.description}
                 onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
                 style={{ width: '100%', padding: '0.6rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' }}
-                placeholder="Optional note"
+                placeholder="הערה אופציונלית"
               />
             </div>
 
@@ -344,7 +374,7 @@ const BudgetDashboardPage: React.FC = () => {
                 disabled={transactionSaving}
                 style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.7rem 1rem', cursor: transactionSaving ? 'not-allowed' : 'pointer', fontWeight: '700' }}
               >
-                {transactionSaving ? 'Saving...' : 'Add transaction'}
+                {transactionSaving ? 'שומר...' : 'הוסף תנועה'}
               </button>
               {transactionMessage && (
                 <span style={{ color: transactionMessage.includes('successfully') ? '#16a34a' : '#dc2626', fontWeight: '600' }}>
@@ -355,11 +385,11 @@ const BudgetDashboardPage: React.FC = () => {
           </form>
 
           <div style={{ marginTop: '1.5rem' }}>
-            <h4 style={{ margin: '0 0 0.75rem 0', color: '#111' }}>Recent transactions</h4>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#0f172a' }}>תנועות אחרונות</h4>
             {transactionsLoading ? (
-              <p style={{ margin: 0, color: '#666' }}>Loading transactions...</p>
+              <p style={{ margin: 0, color: '#64748b' }}>טוען תנועות...</p>
             ) : transactions.length === 0 ? (
-              <p style={{ margin: 0, color: '#666' }}>No transactions yet for this period.</p>
+              <p style={{ margin: 0, color: '#64748b' }}>אין תנועות עדיין לתקופה זו.</p>
             ) : (
               <div style={{ display: 'grid', gap: '0.5rem' }}>
                 {transactions.map((item) => (
@@ -385,37 +415,37 @@ const BudgetDashboardPage: React.FC = () => {
         {!loading && statuses.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
             <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <p style={{ color: '#666', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>Total Budget</p>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>סך כל התקציב</p>
               <p style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#111', margin: '0.5rem 0 0 0' }}>
                 {totalBudget.toLocaleString()} ILS
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.25rem 0 0 0' }}>{statuses.length} categories</p>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>{statuses.length} קטגוריות</p>
             </div>
 
             <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <p style={{ color: '#666', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>Total Spent</p>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>סך הכל שהוצא</p>
               <p style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#111', margin: '0.5rem 0 0 0' }}>
                 {totalSpent.toLocaleString()} ILS
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.25rem 0 0 0' }}>{averagePercentage}% average</p>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>{averagePercentage}% בממוצע</p>
             </div>
 
             <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <p style={{ color: '#666', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>Total Remaining</p>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>היתרה הכוללת</p>
               <p style={{ fontSize: '1.875rem', fontWeight: 'bold', color: totalRemaining >= 0 ? '#16a34a' : '#dc2626', margin: '0.5rem 0 0 0' }}>
                 {totalRemaining.toLocaleString()} ILS
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.25rem 0 0 0' }}>
-                {totalBudget ? ((totalRemaining / totalBudget) * 100).toFixed(1) : '0'}% left
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>
+                {totalBudget ? ((totalRemaining / totalBudget) * 100).toFixed(1) : '0'}% נותר
               </p>
             </div>
 
             <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <p style={{ color: '#666', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>Over Budget</p>
+              <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '500', margin: 0 }}>חריגות תקציב</p>
               <p style={{ fontSize: '1.875rem', fontWeight: 'bold', color: overBudgetCount > 0 ? '#dc2626' : '#16a34a', margin: '0.5rem 0 0 0' }}>
                 {overBudgetCount}
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.25rem 0 0 0' }}>of {statuses.length} categories</p>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>מתוך {statuses.length} קטגוריות</p>
             </div>
           </div>
         )}
@@ -469,28 +499,28 @@ const BudgetDashboardPage: React.FC = () => {
 
         {/* Status Table */}
         {loading ? (
-          <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>Loading...</p>
+          <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>טוען...</p>
         ) : statuses.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>No budget data for this period</p>
+          <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>אין נתוני תקציב לתקופה זו</p>
         ) : (
           <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ backgroundColor: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
                 <tr>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
-                    Category
+                    קטגוריה
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
-                    Budget
+                    תקציב
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
-                    Spent
+                    הוצא
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
-                    Remaining
+                    נותר
                   </th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
-                    Progress
+                    התקדמות
                   </th>
                 </tr>
               </thead>
@@ -502,7 +532,7 @@ const BudgetDashboardPage: React.FC = () => {
                         <span style={{ fontWeight: 'bold', color: '#111' }}>{status.category}</span>
                         {status.isOverBudget && (
                           <span style={{ padding: '0.125rem 0.5rem', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '0.25rem' }}>
-                            Over
+                            חריגה
                           </span>
                         )}
                       </div>
@@ -560,13 +590,13 @@ const BudgetDashboardPage: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#991b1b', margin: '0 0 0.5rem 0' }}>Budget Alerts</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#991b1b', margin: '0 0 0.5rem 0' }}>התראות תקציב</h3>
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                   {statuses
                     .filter((s) => s.isOverBudget)
                     .map((s) => (
                       <li key={s.category} style={{ fontSize: '0.875rem', color: '#b91c1c', marginBottom: '0.25rem' }}>
-                        <strong>{s.category}</strong> exceeded budget by <strong>{(s.spent - s.limit).toLocaleString()} ILS</strong>
+                        <strong>{s.category}</strong> חרגה מהתקציב ב- <strong>{(s.spent - s.limit).toLocaleString()} ILS</strong>
                       </li>
                     ))}
                 </ul>
