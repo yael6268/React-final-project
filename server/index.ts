@@ -2,14 +2,19 @@
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 // @ts-ignore
 import { generateFinancialInsight } from './services/aiService.js';
 import authRoutes from './routes/auth.routes.ts'; // 🔥 שינוי 1: מייבאים את הנתיבים שלך!
+import budgetRoutes from './routes/budgetRoutes.ts';
+import transactionRoutes from './routes/transactionRoutes.ts';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
 // 🔥 חיבור ל-MongoDB בענן
 const connectDB = async () => {
@@ -30,6 +35,9 @@ app.use(express.json());
 
 // 🔥 שינוי 2: מחברים את נתיבי ההרשמה וההתחברות שלך לשרת
 app.use('/api/auth', authRoutes);
+// Mount budget and transaction routes
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // הגדרת Interface לנתונים - זה הכוח של TS!
 interface TransactionSummary {

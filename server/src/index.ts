@@ -9,6 +9,7 @@ import { getTransactions, createTransaction } from './controllers/transaction.co
 import { authenticateToken } from './middlewares/auth.middleware.ts';
 // 🔥 הוספנו: ייבוא של פונקציות ההרשמה וההתחברות שלך
 import { register, login } from './controllers/auth.controller.ts';
+import budgetRoutes from '../routes/budgetRoutes.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +36,7 @@ app.use(express.json());
 // 🔥 הוספנו: הנתיבים האמיתיים של ההרשמה וההתחברות למערכת
 app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
+app.use('/api/budgets', budgetRoutes);
 
 app.use('/api/transactions', authenticateToken);
 app.get('/api/transactions', getTransactions);

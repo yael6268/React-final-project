@@ -3,8 +3,8 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
-import BudgetManagementPage from './pages/BudgetManagementPage';
+import BudgetFlowPage from './pages/BudgetFlowPage.tsx';
+import BudgetManagementPage from './pages/BudgetManagementPage.tsx';
 import './App.css';
 
 function App() {
@@ -12,21 +12,21 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           <Route
-            path="/dashboard"
+            path="/budget"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <BudgetFlowPage />
               </ProtectedRoute>
             }
           />
 
-          {/* maintain access to budget page for testing */}
           <Route
-            path="/budget"
+            path="/budget/manage"
             element={
               <ProtectedRoute>
                 <BudgetManagementPage />
@@ -34,8 +34,16 @@ function App() {
             }
           />
 
-          {/* default and fallback */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/budget" replace />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
