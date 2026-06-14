@@ -57,7 +57,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // יצירת טוקן אבטחה (JWT) שתקף ל-24 שעות
     const token = jwt.sign(
-      { userId: user._id.toString(), name: user.name },
+      { userId: user._id, name: user.name },
       JWT_SECRET,
       { expiresIn: '24h' }
     );

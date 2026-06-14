@@ -23,15 +23,10 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    // Normalize id to string (in case it's an ObjectId or different key)
-    const id = (payload as any)?.userId || (payload as any)?.id || '';
-    const idStr = typeof id === 'string' ? id : (id?.toString ? id.toString() : '');
-    // Ensure name is a string to satisfy stricter TS config
-    const nameStr = typeof (payload as any)?.name === 'string' ? (payload as any).name : '';
     req.user = {
-  id: idStr,
-  name: nameStr,
-    } as any;
+      id: payload.userId,
+      ...(payload.name ? { name: payload.name } : {}),
+    };
     next();
   } catch (error: unknown) {
     const message = error instanceof jwt.TokenExpiredError
