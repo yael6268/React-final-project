@@ -72,6 +72,3 @@ export default defineConfig([
 ])
 ```
 
-PORT=5000
-MONGODB_URI=mongodb+srv://p0548515152_db_user:K9cczgLNKMT8cezo@cluster0.mpfwm3z.mongodb.net/transactions?appName=Cluster0&w=majority
-JWT_SECRET=super_secret_key_1234
