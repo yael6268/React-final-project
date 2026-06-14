@@ -7,66 +7,31 @@ import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './components/Login'
 import Register from './components/Register'
-import BudgetFlowPage from './pages/BudgetFlowPage.tsx';
-import BudgetManagementPage from './pages/BudgetManagementPage.tsx';
-import './App.css';
+import BudgetFlowPage from './pages/BudgetFlowPage.tsx'
+import BudgetManagementPage from './pages/BudgetManagementPage.tsx'
 
 function App() {
   return (
     <AuthProvider>
-      <div style={{ background: 'linear-gradient(180deg, #f7f8ff 0%, #eef2fb 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <NavBar />
-        <main style={{ flex: 1, padding: '0', maxWidth: '100%' }}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
-
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </main>
-      </div>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          <Route
-            path="/budget"
-            element={
-              <ProtectedRoute>
-                <BudgetFlowPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/budget/manage"
-            element={
-              <ProtectedRoute>
-                <BudgetManagementPage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Navigate to="/budget" replace />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+        <div style={{ background: 'linear-gradient(180deg, #f7f8ff 0%, #eef2fb 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <NavBar />
+          <main style={{ flex: 1, padding: '0', maxWidth: '100%' }}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+              <Route path="/budget" element={<ProtectedRoute><BudgetFlowPage /></ProtectedRoute>} />
+              <Route path="/budget/manage" element={<ProtectedRoute><BudgetManagementPage /></ProtectedRoute>} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+        </div>
       </BrowserRouter>
     </AuthProvider>
-  );
+  )
 }
 
-export default App;
+export default App

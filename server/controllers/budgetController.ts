@@ -1,14 +1,13 @@
 import type { Request, Response } from "express";
 import * as budgetService from "../services/budgetService.ts";
 
-// אחרי שאני מחברת את ה ענף שלי ל middleware אני יצטרך לשנות שיקח את  userId מה token של המשתמש ולא מה פרמטרים של ה url כמו שעשיתי פה עכשיו
-
 // CREATE
-const createBudget = async (req: Request, res: Response) => {
+const createBudget = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.body?.userId;
         if (!userId) {
-            return res.status(400).json({ error: "Missing userId" });
+            res.status(400).json({ error: "Missing userId" });
+            return;
         }
 
         const budget = await budgetService.createBudget({ ...req.body, userId });
@@ -19,7 +18,7 @@ const createBudget = async (req: Request, res: Response) => {
 };
 
 // GET ALL
-const getBudgets = async (req: Request, res: Response) => {
+const getBudgets = async (_req: Request, res: Response): Promise<void> => {
     try {
         const budgets = await budgetService.getBudgets();
         res.json(budgets);
@@ -29,16 +28,18 @@ const getBudgets = async (req: Request, res: Response) => {
 };
 
 // GET BY ID
-const getBudgetById = async (req: Request, res: Response) => {
+const getBudgetById = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            return res.status(400).json({ error: "Missing budget id" });
+            res.status(400).json({ error: "Missing budget id" });
+            return;
         }
 
         const budget = await budgetService.getBudgetById(id);
         if (!budget) {
-            return res.status(404).json({ error: "Budget not found" });
+            res.status(404).json({ error: "Budget not found" });
+            return;
         }
         res.json(budget);
     } catch (error: any) {
@@ -47,16 +48,18 @@ const getBudgetById = async (req: Request, res: Response) => {
 };
 
 // UPDATE
-const updateBudget = async (req: Request, res: Response) => {
+const updateBudget = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            return res.status(400).json({ error: "Missing budget id" });
+            res.status(400).json({ error: "Missing budget id" });
+            return;
         }
 
         const updatedBudget = await budgetService.updateBudget(id, req.body);
         if (!updatedBudget) {
-            return res.status(404).json({ error: "Budget not found" });
+            res.status(404).json({ error: "Budget not found" });
+            return;
         }
         res.json(updatedBudget);
     } catch (error: any) {
@@ -65,16 +68,18 @@ const updateBudget = async (req: Request, res: Response) => {
 };
 
 // DELETE
-const deleteBudget = async (req: Request, res: Response) => {
+const deleteBudget = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
         if (!id) {
-            return res.status(400).json({ error: "Missing budget id" });
+            res.status(400).json({ error: "Missing budget id" });
+            return;
         }
 
         const deletedBudget = await budgetService.deleteBudget(id);
         if (!deletedBudget) {
-            return res.status(404).json({ error: "Budget not found" });
+            res.status(404).json({ error: "Budget not found" });
+            return;
         }
         res.json({ message: "Budget deleted successfully" });
     } catch (error: any) {
@@ -83,11 +88,12 @@ const deleteBudget = async (req: Request, res: Response) => {
 };
 
 // GET budgets by user
-const getBudgetsByUser = async (req: Request, res: Response) => {
+const getBudgetsByUser = async (req: Request, res: Response): Promise<void> => {
     const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
 
     if (!userId) {
-        return res.status(400).json({ error: "Missing userId parameter" });
+        res.status(400).json({ error: "Missing userId parameter" });
+        return;
     }
 
     const budgets = await budgetService.getBudgetsByUser(userId);
@@ -95,14 +101,15 @@ const getBudgetsByUser = async (req: Request, res: Response) => {
 };
 
 // GET budgets by month and year for a user
-const getBudgetsByMonth = async (req: Request, res: Response) => {
+const getBudgetsByMonth = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
         const month = Array.isArray(req.params.month) ? req.params.month[0] : req.params.month;
         const year = Array.isArray(req.params.year) ? req.params.year[0] : req.params.year;
 
         if (!userId || !month || !year) {
-            return res.status(400).json({ error: "Missing required parameters" });
+            res.status(400).json({ error: "Missing required parameters" });
+            return;
         }
 
         const budgets = await budgetService.getBudgetsByMonth(userId, Number(month), Number(year));
@@ -113,14 +120,15 @@ const getBudgetsByMonth = async (req: Request, res: Response) => {
 };
 
 // GET budget status for a user in a specific month and year
-const getBudgetStatus = async (req: Request, res: Response) => {
+const getBudgetStatus = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
         const month = Array.isArray(req.params.month) ? req.params.month[0] : req.params.month;
         const year = Array.isArray(req.params.year) ? req.params.year[0] : req.params.year;
 
         if (!userId || !month || !year) {
-            return res.status(400).json({ error: "Missing required parameters" });
+            res.status(400).json({ error: "Missing required parameters" });
+            return;
         }
 
         const result = await budgetService.getBudgetStatus(userId, Number(month), Number(year));

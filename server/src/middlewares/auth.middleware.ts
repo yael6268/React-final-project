@@ -25,7 +25,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
     req.user = {
       id: payload.userId,
-      name: payload.name,
+      ...(payload.name ? { name: payload.name } : {}),
     };
     next();
   } catch (error: unknown) {

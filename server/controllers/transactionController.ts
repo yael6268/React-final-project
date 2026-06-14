@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import Transection from '../models/Transaction.js';
+import Transaction from '../src/models/Transaction.ts';
 import { z } from 'zod';
 
 // מקור אמת לקטגוריות - ישמש גם להצגה בצד הלקוח וגם לולידציה בצד השרת
@@ -168,7 +168,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<an
         if (category && !CATEGORIES.includes(category)) {
             return res.status(400).json({ message: "קטגוריה לא תקינה" });
         }
-        const transaction = new Transection({
+        const transaction = new Transaction({
             // @ts-ignore
             userId: req.user.id,
             title,

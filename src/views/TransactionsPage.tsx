@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { useTransactions } from '../hooks/useTransactions';
-import TransactionFilters from '../components/TransactionFilters';
+import TransactionFiltersComponent from '../components/TransactionFilters.tsx';
 import TransactionForm from '../components/TransactionForm';
 import TransactionTable from '../components/TransactionTable';
 import TransactionSummary from '../components/TransactionSummary';
@@ -84,7 +84,7 @@ const TransactionsPage: React.FC = () => {
       </section>
 
       <section className="stack" style={{ width: '100%' }}>
-        <TransactionFilters filters={filters} onChange={handleFiltersChange} />
+        <TransactionFiltersComponent filters={filters} onChange={handleFiltersChange} />
       </section>
 
       <div className="page-grid">

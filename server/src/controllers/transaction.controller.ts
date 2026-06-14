@@ -18,7 +18,14 @@ export const getTransactions = async (req: Request, res: Response, next: NextFun
     const fromDate = req.query.fromDate as string | undefined;
     const toDate = req.query.toDate as string | undefined;
 
-    const data = await transactionService.fetchTransactions(userId, { page, limit, category, type, fromDate, toDate });
+    const data = await transactionService.fetchTransactions(userId, {
+      page,
+      limit,
+      ...(category ? { category } : {}),
+      ...(type ? { type } : {}),
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate ? { toDate } : {})
+    });
     
     res.status(200).json({
       success: true,

@@ -9,7 +9,7 @@ interface TransactionFiltersProps {
 
 // categories will be fetched from server; include empty option at runtime
 
-const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, onChange }) => {
+const TransactionFiltersView: React.FC<TransactionFiltersProps> = ({ filters, onChange }) => {
   const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
@@ -103,4 +103,4 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, onChan
   );
 };
 
-export default TransactionFilters;
+export default TransactionFiltersView;

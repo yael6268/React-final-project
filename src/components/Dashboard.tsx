@@ -4,7 +4,6 @@ import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid
 } from 'recharts';
-import SummaryCard from './SummaryCard';
 import AgentButton from './AgentButton';
 import AiInsightDrawer from './AiInsightDrawer';
 
