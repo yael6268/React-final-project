@@ -56,15 +56,22 @@ const Dashboard: React.FC = () => {
     setAiLoading(true);
     setAiInsight(null);
     try {
-      // prefer to send real data if available, otherwise server will use mock
-      const payload = data && data.length ? { transactions: data } : {};
+      // prefer server-side DB fetch when user is authenticated:
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      // If we have a token, let the server fetch the real transactions for this user.
+      // If no token, fall back to sending the analytics data (which may be mock).
+      const payload = token ? {} : (data && data.length ? { transactions: data } : {});
       const key = JSON.stringify(payload);
       if (aiCache.current.has(key)) {
         setAiInsight(aiCache.current.get(key) || null);
         setAiLoading(false);
         return;
       }
-      const res = await axios.post('http://localhost:5000/api/ai/insights', payload);
+  const headers: Record<string, string> | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+  // Debug: show token and headers in browser console before sending
+  // eslint-disable-next-line no-console
+  console.log('AI request - token present:', !!token, 'token:', token, 'headers:', headers);
+  const res = await axios.post('http://localhost:5000/api/ai/insights', payload, { headers });
       let insightText = res.data.insight || res.data;
       if (typeof insightText === 'string') {
         // remove all asterisks (single or multiple) that appear in the AI text

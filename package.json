@@ -17,7 +17,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
     "axios": "^1.16.0",
-    "bcrypt": "^5.4.0",
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.22.2",
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/bcrypt": "^5.4.0",
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.25",
     "@types/jsonwebtoken": "^9.0.10",
@@ -65,4 +65,3 @@
   },
   "homepage": "https://github.com/yael6268/React-final-project#readme"
 }
- 

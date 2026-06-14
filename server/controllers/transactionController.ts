@@ -108,9 +108,20 @@ export const getWeeklyTrends = async (req: Request, res: Response): Promise<void
 // פונקציה לקבלת רשימת עסקאות גולמית ומסוננת
 export const getTransactions = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { startDate, endDate, category, page = '1', limit = '10' } = req.query;
-        
-        // ביצוע הולידציה של Zod
+        // Coerce query params to strings to avoid Zod parse errors when client sends numbers/arrays
+        const rawStart = req.query.startDate;
+        const rawEnd = req.query.endDate;
+        const rawCategory = req.query.category;
+        const rawPage = req.query.page ?? '1';
+        const rawLimit = req.query.limit ?? '10';
+
+        const startDate = Array.isArray(rawStart) ? rawStart[0] : (rawStart ?? undefined);
+        const endDate = Array.isArray(rawEnd) ? rawEnd[0] : (rawEnd ?? undefined);
+        const category = Array.isArray(rawCategory) ? rawCategory[0] : (rawCategory ?? undefined);
+        const page = String(Array.isArray(rawPage) ? rawPage[0] : rawPage);
+        const limit = String(Array.isArray(rawLimit) ? rawLimit[0] : rawLimit);
+
+        // Validate with Zod (now values are strings)
         transactionSchema.parse({ startDate, endDate, category, page, limit });
 
         // @ts-ignore
@@ -140,7 +151,9 @@ export const getTransactions = async (req: Request, res: Response): Promise<any>
             currentPage: pageNum,
             totalTransactions: total
         });
-    } catch (err) {
+    } catch (err: any) {
+        // Log full error on server for debugging
+        console.error('getTransactions error:', err);
         res.status(500).json({ message: "שגיאה בקבלת העסקאות או נתונים לא תקינים" });
     }
 };
