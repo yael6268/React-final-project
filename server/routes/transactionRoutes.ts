@@ -10,6 +10,7 @@ const router = express.Router();
 // 🛠️ הנתיבים של מפתחת 2 (ניהול עסקאות גולמיות)
 // ==========================================
 router.get('/', authMiddleware, transactionController.getTransactions);
+router.get('/categories', authMiddleware, transactionController.getCategories);
 router.post('/', authMiddleware, transactionController.createTransaction);
 router.delete('/:id', authMiddleware, transactionController.deleteTransaction);
 router.put('/:id', authMiddleware, transactionController.updateTransaction);

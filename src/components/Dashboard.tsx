@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
         const response = await axios.get<AnalyticsData[]>('http://localhost:5000/api/analytics/category-summary');
         setData(response.data);
 
-        const trendRes = await axios.get<TrendData[]>('http://localhost:5000/api/analytics/trends');
+        const trendRes = await axios.get<TrendData[]>('http://localhost:5000/api/analytics/weekly-trends');
         setTrendData(trendRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -81,43 +81,60 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', backgroundColor: '#f9f9f9', minHeight: '100vh', direction: 'rtl' }}>
+    <div className="page-shell" style={{ direction: 'rtl' }}>
 
-      {/* 1. כרטיסיות סיכום בחלק העליון */}
-      <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '30px', flexWrap: 'wrap' }}>
-        <SummaryCard title="סה'כ הכנסות" amount={12000} color="#00C49F" />
-        <SummaryCard title="סה'כ הוצאות" amount={8500} color="#FF8042" />
-        <SummaryCard title="יתרה נוכחית" amount={3500} color="#0088FE" />
-      </div>
+      {/* Header Section */}
+      <section className="page-hero">
+        <div className="hero-copy">
+          <p className="panel-tag">ניהול תנועות</p>
+          <h1 className="hero-title">לוח בקרה פיננסי</h1>
+          <p className="hero-subtitle">
+            עקבו אחרי הכנסותיכם וההוצאות שלכם בזמן אמת. קבלו תובנות חכמות ותגידו להשקעה שלכם הצעדים הבאים.
+          </p>
+        </div>
 
-      {/* 2. אזור הגרפים מסודר בשני טורים */}
+        <div className="panel hero-card">
+          <p className="section-title" style={{ marginBottom: 20 }}>תצוגת מצב מהירה</p>
+          <div className="summary-cards" style={{ marginTop: '18px' }}>
+            <div className="summary-card">
+              <span className="summary-label">סה"כ הכנסות</span>
+              <p className="summary-value" style={{ color: '#0f775f' }}>₪12,000</p>
+            </div>
+            <div className="summary-card">
+              <span className="summary-label">סה"כ הוצאות</span>
+              <p className="summary-value" style={{ color: '#b91c1c' }}>₪8,500</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Charts Section */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '20px',
-        maxWidth: '1200px',
-        margin: '0 auto'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+        gap: '28px',
+        maxWidth: '100%',
+        margin: '36px 0'
       }}>
-
-        {/* גרף קווי - מגמת הוצאות */}
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>מגמת הוצאות שבועית</h2>
+        {/* Line Chart */}
+        <div style={{ backgroundColor: 'white', padding: '28px', borderRadius: '28px', boxShadow: '0 18px 32px rgba(15, 23, 42, 0.06)', border: '1px solid #f0eff5' }}>
+          <h2 style={{ textAlign: 'right', marginBottom: '22px', color: '#2f2b59', fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>מגמת הוצאות שבועית</h2>
           <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0eff5" />
+                <XAxis dataKey="date" stroke="#999" />
+                <YAxis stroke="#999" />
                 <Tooltip />
-                <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={3} dot={{ r: 6, fill: '#8884d8' }} />
+                <Line type="monotone" dataKey="amount" stroke="#5439ff" strokeWidth={3} dot={{ r: 6, fill: '#5439ff' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* גרף עוגה - הוצאות לפי קטגוריה */}
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>סיכום הוצאות לפי קטגוריה</h2>
+        {/* Pie Chart */}
+        <div style={{ backgroundColor: 'white', padding: '28px', borderRadius: '28px', boxShadow: '0 18px 32px rgba(15, 23, 42, 0.06)', border: '1px solid #f0eff5' }}>
+          <h2 style={{ textAlign: 'right', marginBottom: '22px', color: '#2f2b59', fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>הוצאות לפי קטגוריה</h2>
           <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -140,10 +157,9 @@ const Dashboard: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </div>
-
       </div>
 
-      {/* Floating Agent button - always visible */}
+      {/* Agent Button and Drawer */}
       <AgentButton onClick={handleAgentClick} />
       <AiInsightDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} loading={aiLoading} insight={aiInsight} />
     </div>
