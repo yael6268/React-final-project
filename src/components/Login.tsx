@@ -103,6 +103,17 @@ export default function Login() {
         </button>
       </form>
 
+      <div style={{ marginTop: '12px', textAlign: 'center' }}>
+        <span>אין לך חשבון? </span>
+        <button
+          type="button"
+          onClick={() => navigate('/register')}
+          style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+        >
+          הירשם עכשיו
+        </button>
+      </div>
+
       {serverMessage && (
         <div style={{ marginTop: '20px', padding: '10px', borderRadius: '4px', backgroundColor: isError ? '#f8d7da' : '#d4edda', color: isError ? '#721c24' : '#155724' }}>
           {serverMessage}
