@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as api from '../services/budgetApi';
 
 
@@ -11,6 +12,7 @@ interface Budget {
 }
 
 const BudgetManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +96,7 @@ const BudgetManagementPage: React.FC = () => {
 
       await fetchBudgets();
       resetForm();
+      navigate('/budget');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Operation failed');
     } finally {
@@ -147,10 +150,28 @@ const BudgetManagementPage: React.FC = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem', color: '#111' }}>
-          Budget Management
-        </h1>
-        <p style={{ color: '#666', marginBottom: '2rem' }}>Create, edit, and manage your budgets</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#111' }}>
+              Budget Management
+            </h1>
+            <p style={{ color: '#666', margin: 0 }}>Create, edit, and manage your budgets</p>
+          </div>
+          <button
+            onClick={() => navigate('/budget')}
+            style={{
+              backgroundColor: '#e5e7eb',
+              color: '#111827',
+              border: 'none',
+              borderRadius: '0.75rem',
+              padding: '0.75rem 1rem',
+              cursor: 'pointer',
+              fontWeight: '700',
+            }}
+          >
+            חזור למסך התקציב
+          </button>
+        </div>
 
         {/* Alerts */}
         {error && (

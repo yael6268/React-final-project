@@ -7,14 +7,14 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, userId } = useAuth();
 
   if (loading) {
     // ✅ שונה מ-textDirection ל-direction
     return <div style={{ direction: 'rtl', padding: '20px' }}>טוען מערכת אבטחה...</div>; 
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !userId) {
     return <Navigate to="/login" replace />;
   }
 
