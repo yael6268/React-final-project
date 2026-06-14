@@ -15,7 +15,7 @@ interface ITransaction {
     description?: string;
 }
 
-// סכמת ולידציה באמצעות Zod (התאמה של מפתחת 2)
+// סכמת ולידציה באמצעות Zod
 const transactionSchema = z.object({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
@@ -23,7 +23,7 @@ const transactionSchema = z.object({
     toDate: z.string().optional(),
     category: z.string().optional(),
     page: z.string().optional(),
-    limit: z.string().optional()
+    limit: z.string().optional(),
 });
 
 // ==========================================
@@ -113,12 +113,26 @@ export const getWeeklyTrends = async (req: Request, res: Response): Promise<void
 // פונקציה לקבלת רשימת עסקאות גולמית ומסוננת
 export const getTransactions = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { startDate, endDate, fromDate, toDate, category, page = '1', limit = '10' } = req.query;
-        const queryStart = (startDate as string) || (fromDate as string);
-        const queryEnd = (endDate as string) || (toDate as string);
-        
-        // ביצוע הולידציה של Zod
-        transactionSchema.parse({ startDate: queryStart, endDate: queryEnd, category, page, limit });
+    // Coerce query params to strings to avoid Zod parse errors when client sends numbers/arrays
+    const rawStart = req.query.startDate;
+    const rawEnd = req.query.endDate;
+    const rawFrom = req.query.fromDate;
+    const rawTo = req.query.toDate;
+    const rawCategory = req.query.category;
+    const rawPage = req.query.page ?? '1';
+    const rawLimit = req.query.limit ?? '10';
+
+    const startDate = Array.isArray(rawStart) ? rawStart[0] : (rawStart ?? rawFrom ?? undefined);
+    const endDate = Array.isArray(rawEnd) ? rawEnd[0] : (rawEnd ?? rawTo ?? undefined);
+    const category = Array.isArray(rawCategory) ? rawCategory[0] : (rawCategory ?? undefined);
+    const page = String(Array.isArray(rawPage) ? rawPage[0] : rawPage);
+    const limit = String(Array.isArray(rawLimit) ? rawLimit[0] : rawLimit);
+
+    // Validate with Zod (now values are strings)
+    transactionSchema.parse({ startDate, endDate, category, page, limit });
+
+    const queryStart = startDate;
+    const queryEnd = endDate;
 
         // @ts-ignore
         let query: any = { userId: req.user.id };
@@ -147,7 +161,9 @@ export const getTransactions = async (req: Request, res: Response): Promise<any>
             currentPage: pageNum,
             totalTransactions: total
         });
-    } catch (err) {
+    } catch (err: any) {
+        // Log full error on server for debugging
+        console.error('getTransactions error:', err);
         res.status(500).json({ message: "שגיאה בקבלת העסקאות או נתונים לא תקינים" });
     }
 };
